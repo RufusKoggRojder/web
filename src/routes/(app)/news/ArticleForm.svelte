@@ -7,7 +7,7 @@
   import LangTabs from "$lib/components/layout/LangTabs.svelte";
   import TagSelector from "$lib/components/TagSelector.svelte";
   import type { AuthorOption } from "$lib/news/getArticles";
-  import type { ArticleSchema } from "$lib/news/schema";
+  import { type ArticleSchema } from "$lib/news/schema";
   import * as m from "$paraglide/messages";
   import type { Tag } from "@prisma/client";
   import { type SuperForm } from "sveltekit-superforms";
@@ -29,7 +29,7 @@
     a.customId === b.customId &&
     a.type === b.type;
 
-  const onFileSelected = (
+  const onImageFileSelected = (
     event: Event & {
       currentTarget: EventTarget & HTMLInputElement;
     },
@@ -63,19 +63,12 @@
     if (!video) return;
     let reader = new FileReader();
     reader.readAsDataURL(video);
-    reader.onload = (e) => {
-      let result = e.target?.result ?? undefined;
-      // If array buffer, convert to base64
-      if (result instanceof ArrayBuffer) {
-        articleVideo = btoa(
-          new Uint8Array(result).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            "",
-          ),
-        );
-      } else {
-        articleVideo = result;
-      }
+    reader.onload = () => {
+      var URL = window.URL || window.webkitURL;
+      articleVideo = URL.createObjectURL(
+        new Blob([video], { type: "video/mp4" }),
+      );
+      console.log(articleVideo);
     };
   };
 </script>
@@ -139,7 +132,7 @@
     {superform}
     field="image"
     label="Bild"
-    onChange={onFileSelected}
+    onChange={onImageFileSelected}
     accept="image/*"
   />
 
