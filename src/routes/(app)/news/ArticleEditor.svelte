@@ -52,7 +52,7 @@
         removedAt: null,
         status: "draft",
         imageUrl: articleImage ?? $form.imageUrl ?? null,
-        videoUrl: articleVideo ?? $form.imageUrl ?? null,
+        videoUrl: articleVideo ?? $form.videoUrl ?? null,
       }}
     >
       <AuthorSignature

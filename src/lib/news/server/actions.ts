@@ -31,6 +31,17 @@ const uploadImage = async (user: AuthUser, image: File, slug: string) => {
   return imageUrl;
 };
 
+const uploadVideo = async (user: AuthUser, video: File, slug: string) => {
+  const videoUrl = await uploadFile(
+    user,
+    video,
+    `public/news/${slug}`,
+    PUBLIC_BUCKETS_FILES,
+    "header",
+  );
+  return videoUrl;
+};
+
 const sendNewArticleNotification = async (
   article: Article & { tags: Array<Pick<Tag, "id">>; author: Author },
   notificationText: string | null | undefined,
@@ -78,6 +89,7 @@ export const createArticle: Action = async (event) => {
     sendNotification: shouldSendNotification,
     notificationText,
     image,
+    video,
     body,
     bodyEn,
     ...rest
@@ -99,6 +111,7 @@ export const createArticle: Action = async (event) => {
   slug = slugWithCount(slug, slugCount);
 
   if (image) rest.imageUrl = await uploadImage(user, image, slug);
+  if (video) rest.videoUrl = await uploadVideo(user, video, slug);
 
   const result = await prisma.article.create({
     data: {
@@ -176,7 +189,7 @@ export const updateArticle: Action<{ slug: string }> = async (event) => {
     allowFiles: true,
   });
   if (!form.valid) return fail(400, { form });
-  const { slug, author, tags, image, body, bodyEn, ...rest } = form.data;
+  const { slug, author, tags, image, video, body, bodyEn, ...rest } = form.data;
   const existingAuthor = await prisma.author.findFirst({
     where: {
       member: { id: author.memberId },
@@ -186,6 +199,7 @@ export const updateArticle: Action<{ slug: string }> = async (event) => {
   });
 
   if (image) rest.imageUrl = await uploadImage(user, image, slug);
+  if (video) rest.videoUrl = await uploadVideo(user, video, slug);
 
   try {
     await prisma.article.update({
